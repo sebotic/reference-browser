@@ -1,0 +1,57 @@
+<div class="container-fluid">
+    <br>
+    <div class="row-fluid">
+
+        <div class="col-md-12">
+
+            <h1>{{ label }} <a href="{{'http://www.wikidata.org/entity/' + qid}}">{{qid}}</a></h1>
+
+            {{ concat_aliases }}
+
+        </div>
+
+    </div>
+</div>
+
+<br>
+<!--<div class="container-fluid">-->
+<div class="row-fluid">
+
+    <div class="col-md-6">
+
+        <table class="table table-bordered ">
+            <tr *ngFor="let x of table_data">
+                <td scope="row"><b>{{ x['property'] }}</b></td>
+                <td scope="row">{{ x['value'] }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="col-md-6">
+        <!--<table class="table table-bordered">-->
+        <!--<tr *ngFor="let x of table_data">-->
+        <!--<td scope="row"><b>{{ x['property'] }}</b></td>-->
+        <!--<td scope="row">{{ x['value'] }}</td>-->
+        <!--</tr>-->
+        <!--</table>-->
+    </div>
+
+</div>
+
+<div class="container-fluid centered">
+    <div class="row-fluid centered">
+        <div class="col-md-12">
+
+            <app-ref-timeline [qid]="qid"></app-ref-timeline>
+
+        </div>
+    </div>
+</div>
+<div class="container-fluid centered">
+    <div class="row-fluid centered">
+        <div class="col-md-12">
+
+            <br><br><br>
+        </div>
+    </div>
+</div>

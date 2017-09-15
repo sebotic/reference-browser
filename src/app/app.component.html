@@ -1,4 +1,5 @@
-<!--The content below is only a placeholder and can be replaced.-->
+<!--
+The content below is only a placeholder and can be replaced.
 <div style="text-align:center">
   <h1>
     Welcome to {{title}}!
@@ -17,4 +18,27 @@
     <h2><a target="_blank" href="https://blog.angular.io/">Angular blog</a></h2>
   </li>
 </ul>
+-->
 
+<div class="ui menu">
+  <div class="ui container">
+    <a href="#" class="header item">
+
+      <img src='../assets/paper.png' />
+    </a>
+    <div class="header item borderless">
+      <h1 class="ui header">
+        Paper search
+      </h1>
+    </div>
+  </div>
+</div>
+
+<div class="container-fluid">
+  <div class="row-fluid">
+    <div class="span12">
+      <app-menu-bar [items]="routeDef"></app-menu-bar>
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</div>

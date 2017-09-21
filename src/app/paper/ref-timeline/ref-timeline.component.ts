@@ -22,9 +22,9 @@ export class RefTimelineComponent implements OnInit {
 
   ngOnInit() {
       this.wd.search(`
-      select ?cited (count(?cited) as ?count) ?title ?pubdate where {
+      select (count(?cited) as ?count) ?cited ?title ?pubdate where {
          wd:${this.qid} wdt:P2860 ?cited .
-          OPTIONAL {?cited wdt:P2860 ?cited2 .}
+          OPTIONAL {?cited2 wdt:P2860 ?cited .}
           OPTIONAL {?cited wdt:P577 ?pubdate .}
           OPTIONAL {?cited wdt:P1476 ?title .}
         }
@@ -41,12 +41,17 @@ export class RefTimelineComponent implements OnInit {
                   let pubdate: string =  x['pubdate']['value'];
 
                   let o = {id: i, content:  title , start: pubdate, style: "font-size: x-small; " };
-                  if(parseInt(count) > 20) {
-                      o['style'] = "font-size: x-small; color: red; background-color: pink;";
+
+                  if (parseInt(count) >= 800 ) {
+                      o['style'] = "font-size: x-small; color: black; background-color: green;";
                   }
-                  else if (parseInt(count) > 10 ) {
+                  else if(parseInt(count) >= 200) {
+                      o['style'] = "font-size: x-small; color: black; background-color: pink;";
+                  }
+                  else if (parseInt(count) >= 100 ) {
                       o['style'] = "font-size: x-small; color: black; background-color: yellow;";
                   }
+
 
                   this.timelineData.push(o);
 
@@ -100,34 +105,6 @@ export class RefTimelineComponent implements OnInit {
           {id: 6, content: 'ItemStyle through css', start: '2014-04-27', type: 'point', style:"color: red; background-color: pink;"}
       ]);
 
-      // let items = new DataSet([
-      //     {id: 1, content: 'item 1', start: '2013-04-20'},
-      //     {id: 2, content: 'item 2', start: '2013-04-14'},
-      //     {id: 3, content: 'item 3', start: '2013-04-18'},
-      //     {id: 4, content: 'item 4', start: '2013-04-16', end: '2013-04-19'},
-      //     {id: 5, content: 'item 5', start: '2013-04-25'},
-      //     {id: 6, content: 'item 6', start: '2013-04-27'}
-      // ]);
-
-      // let container = document.getElementById('visualization');
-      // // Configuration for the Timeline
-      // let options = {
-      //     // width: '100%',
-      //     // height: '120%',
-      //     maxHeight: 300,
-      //     minHeight: 300,
-      //     margin: {
-      //         item: 20
-      //     },
-      //     autoResize: true
-      //
-      // };   //http://visjs.org/docs/timeline/ for more documentation on options
-      // // Create a Timeline
-      // let timeline = new Timeline(container, items, options);
-      //
-      // timeline.on('select', function (properties) {
-      //     console.log('selected items: ' + properties.items);
-      // });
   }
 
 }

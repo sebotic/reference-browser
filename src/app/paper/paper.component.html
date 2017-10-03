@@ -28,12 +28,7 @@
     </div>
 
     <div class="col-md-6">
-        <!--<table class="table table-bordered">-->
-        <!--<tr *ngFor="let x of table_data">-->
-        <!--<td scope="row"><b>{{ x['property'] }}</b></td>-->
-        <!--<td scope="row">{{ x['value'] }}</td>-->
-        <!--</tr>-->
-        <!--</table>-->
+        {{ abstract_text }}
     </div>
 
 </div>
@@ -47,9 +42,21 @@
         </div>
     </div>
 </div>
+
+<br><br><br>
 <div class="container-fluid centered">
     <div class="row-fluid centered">
         <div class="col-md-12">
+
+            <h2>Citation context</h2>
+
+            <table class="table table-bordered ">
+
+            <tr *ngFor="let x of colilResults">
+                <td scope="row"><b><a href="https://www.ncbi.nlm.nih.gov/pubmed/{{ x['CitationPaper']['value'] }}">{{ x['CitationPaper']['value'] }}</a></b></td>
+                <td scope="row">{{ x['Context']['value'] }}</td>
+            </tr>
+            </table>
 
             <br><br><br>
         </div>

@@ -1,6 +1,6 @@
 import {Component, OnInit, forwardRef, Inject} from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import {Http, Response} from "@angular/http";
+import {Http, Response, Headers} from "@angular/http";
 
 import {SearchResult, WDQService} from "../search/search-box/search-box.component";
 
@@ -17,13 +17,16 @@ export class PaperComponent implements OnInit {
     results: Object;
     data: Object;
     label: string;
-    tableData: Array<Object> = [];
     aliases: Array<string> = [];
     concat_aliases: string = '';
     table_data: Array<Object> = [];
-    graphData;
     prop_name_map: Object = {};
     propsToDisplay: Array<string> = ['P2093', 'P577', 'P433', 'P304', 'P478', 'P1433', 'P698', 'P932', 'P356', ];
+    epmc_data: Object;
+    pmid: string;
+    abstract_text: string;
+    colilData: string[] = [];
+    colilResults: string[] = [];
 
     cid: string;
 
@@ -97,6 +100,16 @@ export class PaperComponent implements OnInit {
                         else {
                             tmp[p] = new Set([x['object']['value']]);
                         }
+
+                        // set PMID globally
+                        if (p === 'P698'){
+                            this.pmid = x['object']['value'];
+
+                            // get abstract and other data from Europe PMC
+                            this.get_abstract();
+                            this.get_colil();
+
+                        }
                     }
                 }
 
@@ -105,10 +118,6 @@ export class PaperComponent implements OnInit {
                     if (tmp.hasOwnProperty(y)) {
                         let value = Array.from(tmp[y]).length > 1 ? Array.from(tmp[y]).join(', ') : Array.from(tmp[y]);
                         this.table_data.push({'property': this.prop_name_map[y], 'value': value});
-
-                        // if (y == 'P662') {
-                        //     this.cidService.announceNewCID(value.toString());
-                        // }
                     }
 
                 }
@@ -125,52 +134,65 @@ export class PaperComponent implements OnInit {
             });
     }
 
-    // retrieveLabels(disease_qids: Array<string>): void {
-    //     let tmp_str: string = disease_qids.join(' wd:');
-    //     let query: string = `
-    // https://query.wikidata.org/sparql?query=SELECT ?qid ?qidLabel WHERE {
-    // 	VALUES ?qid {wd:${tmp_str}}
-    // 	SERVICE wikibase:label { bd:serviceParam wikibase:language "en" .}
-    // }&format=json
-    // `;
-    //     console.log(query);
-    //     this.http.request(query)
-    //         .subscribe((res: Response) => {
-    //             let tt = res.json();
-    //             console.log(tt);
-    //
-    //             if (disease_qids.length !== 0) {
-    //
-    //                 for (let x of tt['results']['bindings']) {
-    //                     this.tableData.push({
-    //                         'compound_name': this.label,
-    //                         'compound_qid': this.qid,
-    //                         'disease_name': x['qidLabel']['value'],
-    //                         'disease_qid': x['qid']['value'],
-    //                         'reference': 'FDA',
-    //                         'reference_qid': ''
-    //                     })
-    //                 }
-    //             }
-    //
-    //             for(let x of gottlieb){
-    //                 if(x['drug_qid'] === `http://www.wikidata.org/entity/${this.qid}`){
-    //                     this.tableData.push({
-    //                         'compound_name': this.label,
-    //                         'compound_qid': this.qid,
-    //                         'disease_name': x['Disease name'],
-    //                         'disease_qid': x['disease_qid'],
-    //                         'reference': 'PMID:' + gottlieb_pub.pmid,
-    //                         'reference_qid': gottlieb_pub.qid
-    //                     })
-    //                 }
-    //             }
-    //             console.log(this.tableData);
-    //
-    //             this.graphData = this.prepareGraphData();
-    //             this.interactionTableDataService.announceNewCompoundData(this.tableData);
-    //         });
-    // }
+    get_abstract(): void {
+        let query: string = `http://www.ebi.ac.uk/europepmc/webservices/rest/search?query=ext_id:${this.pmid}&format=json&resulttype=core`;
 
+        this.http.request(query)
+            .subscribe((res: Response) => {
+                this.epmc_data = res.json();
+                this.abstract_text = this.epmc_data['resultList']['result'][0]['abstractText'];
+                console.log(this.epmc_data)
 
+            })
+
+    }
+
+    //http://colil.dbcls.jp/sparql?query=PREFIX+rdf%3A+%3Chttp%3A%2F%2Fwww.w3.org%2F1999%2F02%2F22-rdf-syntax-ns%23%3E%0D%0APREFIX+rdfs%3A+%3Chttp%3A%2F%2Fwww.w3.org%2F2000%2F01%2Frdf-schema%23%3E%0D%0APREFIX+owl%3A+%3Chttp%3A%2F%2Fwww.w3.org%2F2002%2F07%2Fowl%23%3E%0D%0APREFIX+bibo%3A+%3Chttp%3A%2F%2Fpurl.org%2Fontology%2Fbibo%2F%3E%0D%0APREFIX+colil%3A+%3Chttp%3A%2F%2Fpurl.jp%2Fbio%2F10%2Fcolil%2Fontology%2F201303%23%3E%0D%0APREFIX+dcterms%3A+%3Chttp%3A%2F%2Fpurl.org%2Fdc%2Felements%2F1.1%2F%3E%0D%0APREFIX+doco%3A+%3Chttp%3A%2F%2Fpurl.org%2Fspar%2Fdoco%2F%3E%0D%0APREFIX+togows%3A+%3Chttp%3A%2F%2Ftogows.dbcls.jp%2Fontology%2Fncbi-pubmed%23%3E%0D%0Aselect+%3FCitationPaper+%3FContext+where+%7B%0D%0A++%3FCitationPaper+bibo%3Acites+%3FReferencePaper+.%0D%0A++%3FCitationPaper+doco%3Acontains+%5B%0D%0A++++doco%3Acontains+%5B%0D%0A++++++rdf%3Avalue+%3FContext+%3B%0D%0A++++++colil%3Amentions+%3FReferencePaper%0D%0A++++%5D%0D%0A++%5D+.%0D%0A++%3FReferencePaper+rdfs%3AseeAlso+%5B%0D%0A++++rdf%3Atype+colil%3APubMed+%3B%0D%0A++++togows%3Apmid+%2722658127%27%0D%0A++%5D+.%0D%0A%7D&output=json
+
+    get_colil(): void {
+        // let query: string =
+        // `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+        // PREFIX owl: <http://www.w3.org/2002/07/owl#>
+        // PREFIX bibo: <http://purl.org/ontology/bibo/>
+        // PREFIX colil: <http://purl.jp/bio/10/colil/ontology/201303#>
+        // PREFIX dcterms: <http://purl.org/dc/elements/1.1/>
+        // PREFIX doco: <http://purl.org/spar/doco/>
+        // PREFIX togows: <http://togows.dbcls.jp/ontology/ncbi-pubmed#>
+        //
+        // select ?CitationPaper ?Context where {
+        //       ?CitationPaper bibo:cites ?ReferencePaper .
+        //       ?CitationPaper doco:contains [
+        //         doco:contains [
+        //           rdf:value ?Context ;
+        //           colil:mentions ?ReferencePaper
+        //         ]
+        //       ] .
+        //       ?ReferencePaper rdfs:seeAlso [
+        //         rdf:type colil:PubMed ;
+        //         togows:pmid '${this.pmid}'
+        //       ] .
+        //     }`;
+        //
+        // query = 'http://colil.dbcls.jp/sparql?query=' + query + '&output=json';
+
+        let query = "http://colil.dbcls.jp/sparql?query=PREFIX+rdf%3A+%3Chttp%3A%2F%2Fwww.w3.org%2F1999%2F02%2F22-rdf-syntax-ns%23%3E%0D%0APREFIX+rdfs%3A+%3Chttp%3A%2F%2Fwww.w3.org%2F2000%2F01%2Frdf-schema%23%3E%0D%0APREFIX+owl%3A+%3Chttp%3A%2F%2Fwww.w3.org%2F2002%2F07%2Fowl%23%3E%0D%0APREFIX+bibo%3A+%3Chttp%3A%2F%2Fpurl.org%2Fontology%2Fbibo%2F%3E%0D%0APREFIX+colil%3A+%3Chttp%3A%2F%2Fpurl.jp%2Fbio%2F10%2Fcolil%2Fontology%2F201303%23%3E%0D%0APREFIX+dcterms%3A+%3Chttp%3A%2F%2Fpurl.org%2Fdc%2Felements%2F1.1%2F%3E%0D%0APREFIX+doco%3A+%3Chttp%3A%2F%2Fpurl.org%2Fspar%2Fdoco%2F%3E%0D%0APREFIX+togows%3A+%3Chttp%3A%2F%2Ftogows.dbcls.jp%2Fontology%2Fncbi-pubmed%23%3E%0D%0Aselect+%3FCitationPaper+%3FContext+where+%7B%0D%0A++%3FCitationPaper+bibo%3Acites+%3FReferencePaper+.%0D%0A++%3FCitationPaper+doco%3Acontains+%5B%0D%0A++++doco%3Acontains+%5B%0D%0A++++++rdf%3Avalue+%3FContext+%3B%0D%0A++++++colil%3Amentions+%3FReferencePaper%0D%0A++++%5D%0D%0A++%5D+.%0D%0A++%3FReferencePaper+rdfs%3AseeAlso+%5B%0D%0A++++rdf%3Atype+colil%3APubMed+%3B%0D%0A++++togows%3Apmid+%27" + this.pmid + '%27%0D%0A++%5D+.%0D%0A%7D&output=json';
+
+        let h: Headers = new Headers();
+        h.append('Access-Control-Allow-Origin', '');
+        console.log(query);
+
+        this.http.request(query)
+            .subscribe((res: Response) => {
+                this.colilData = res.json();
+                // this.abstract_text = this.epmc_data['resultList']['result'][0]['abstractText'];
+                console.log(this.colilData);
+                this.colilResults = this.colilData['results']['bindings'];
+
+                for (let x of this.colilResults){
+                    x['CitationPaper']['value'] = x['CitationPaper']['value'].split('/').pop();
+
+                }
+
+            })
+    }
 }

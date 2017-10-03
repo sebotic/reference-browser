@@ -103,7 +103,7 @@ export class WDQService {
             `srsearch=${query}`,
 
             `format=json`,
-            'srlimit=500',
+            'srlimit=100', // limit to 100 right now, otherwise, SPARQL value QID list for paper filtering will get too long.
             // 'callback=parseResponse'
             'origin=*' // required for Wikidata CORS, see https://www.wikidata.org/wiki/Special:ApiSandbox#action=query&meta=siteinfo&siprop=namespaces&format=json
         ].join('&');

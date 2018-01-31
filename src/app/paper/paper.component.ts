@@ -135,7 +135,7 @@ export class PaperComponent implements OnInit {
     }
 
     get_abstract(): void {
-        let query: string = `http://www.ebi.ac.uk/europepmc/webservices/rest/search?query=ext_id:${this.pmid}&format=json&resulttype=core`;
+        let query: string = `https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=ext_id:${this.pmid}&format=json&resulttype=core`;
 
         this.http.request(query)
             .subscribe((res: Response) => {
